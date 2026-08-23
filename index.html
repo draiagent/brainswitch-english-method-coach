@@ -728,7 +728,7 @@ body {
             </ul>
             <p><strong>4. 匯入自訂 CSV：</strong></p>
             <ul>
-                <li>點右上角 <i class="fa-solid fa-arrow-up-from-bracket"></i>，欄位需含：單字、中文定義、詞性、【詞性變化】、搭配詞、例句、分類、星級、多益分數區間。</li>
+                <li>點右上角 <i class="fa-solid fa-arrow-up-from-bracket"></i>，欄位需含：單字、中文定義、詞性、【詞性變化】、搭配詞、例句、分類、星級、難度等級。</li>
             </ul>
             <p><strong>5. 為什麼這樣設計？</strong></p>
             <ul>
@@ -753,11 +753,11 @@ body {
                     <div class="setting-desc">【接受精神年齡】誠實從簡單的開始，比硬撐難字有效。</div>
                 </div>
                 <select id="sel-level">
-                    <option value="0-400">0-400（入門）</option>
-                    <option value="400-600">400-600（基礎）</option>
-                    <option value="600-780">600-780（中階）</option>
-                    <option value="780-900">780-900（高階）</option>
-                    <option value="900+">900+（頂標）</option>
+                    <option value="入門">入門 — 最基本的日常用字</option>
+                    <option value="基礎">基礎 — 日常對話夠用</option>
+                    <option value="中階">中階 — 一般商務溝通</option>
+                    <option value="進階">進階 — 專業與正式場合</option>
+                    <option value="精熟">精熟 — 少見但精準的用字</option>
                     <option value="all">全部程度</option>
                 </select>
             </div>
@@ -815,7 +815,7 @@ body {
                                 <div class="mm-leaf"><span class="leaf-text">建立外語腦：強迫切換理解模式</span><span class="leaf-map">外語腦模式（中文遮罩）</span></div>
                                 <div class="mm-leaf"><span class="leaf-text">環境推動力：將外語塞進日常流程</span><span class="leaf-map">連續天數 🔥 每日任務</span></div>
                                 <div class="mm-leaf"><span class="leaf-text">內容型學習：以完成任務取代時間量化</span><span class="leaf-map">今日任務以「張數」計</span></div>
-                                <div class="mm-leaf"><span class="leaf-text">接受精神年齡：從簡單的自我溝通開始</span><span class="leaf-map">程度設定（分數區間）</span></div>
+                                <div class="mm-leaf"><span class="leaf-text">接受精神年齡：從簡單的自我溝通開始</span><span class="leaf-map">程度設定（難度等級）</span></div>
                             </div>
                         </div>
                         <div class="mm-branch">
@@ -847,13 +847,19 @@ body {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script>
 /* =========================================================
-   多益互動單字卡
+   外語腦英語方法教練 BrainSwitch
    設計依據：多語學習三大核心策略心智圖（12 條原則）
    每個功能區塊都標註它實作的是哪一條原則。
    ========================================================= */
 
-const STORE_KEY = 'toeic-vocab-v2';
-const BANDS = ['0-400', '400-600', '600-780', '780-900', '900+'];
+const STORE_KEY = 'brainswitch-v1';
+const LEGACY_STORE_KEYS = ['toeic-vocab-v2'];   // 舊版鍵值，載入時自動搬移
+const BANDS = ['入門', '基礎', '中階', '進階', '精熟'];
+
+// 舊版難度值（分數區間）對應到通用難度等級，供舊 CSV 相容
+const LEGACY_BAND_MAP = {
+    '0-400': '入門', '400-600': '基礎', '600-780': '中階', '780-900': '進階', '900+': '精熟'
+};
 const DAY = 86400000;
 
 // ---- 應用狀態 ----
@@ -871,16 +877,27 @@ let store = {
     notes: {},          // { word: {image, sentence} }
     daily: { date: '', done: 0 },
     streak: { count: 0, lastDate: '' },
-    settings: { level: '400-600', iplus: true, goal: 20, brain: false }
+    settings: { level: '基礎', iplus: true, goal: 20, brain: false }
 };
 
 function loadStore() {
     try {
+        // 舊版鍵值搬移，避免更名後既有學習紀錄消失
+        if (!localStorage.getItem(STORE_KEY)) {
+            for (const oldKey of LEGACY_STORE_KEYS) {
+                const legacy = localStorage.getItem(oldKey);
+                if (legacy) {
+                    localStorage.setItem(STORE_KEY, legacy);
+                    localStorage.removeItem(oldKey);
+                    break;
+                }
+            }
+        }
         const raw = localStorage.getItem(STORE_KEY);
         if (raw) {
             const parsed = JSON.parse(raw);
             store = Object.assign(store, parsed);
-            store.settings = Object.assign({ level: '400-600', iplus: true, goal: 20, brain: false }, parsed.settings || {});
+            store.settings = Object.assign({ level: '基礎', iplus: true, goal: 20, brain: false }, parsed.settings || {});
             store.daily = Object.assign({ date: '', done: 0 }, parsed.daily || {});
             store.streak = Object.assign({ count: 0, lastDate: '' }, parsed.streak || {});
             store.srs = parsed.srs || {};
@@ -888,6 +905,9 @@ function loadStore() {
         }
     } catch (e) {
         console.warn('讀取學習紀錄失敗，改用預設值', e);
+    }
+    if (LEGACY_BAND_MAP[store.settings.level]) {
+        store.settings.level = LEGACY_BAND_MAP[store.settings.level];
     }
     rolloverDaily();
 }
@@ -1026,13 +1046,19 @@ function splitExample(text) {
 // ---- 載入資料 ----
 async function loadDefaultCSV() {
     try {
-        const response = await fetch('toeic-vocab-data.csv');
+        const response = await fetch('vocab-data.csv');
         if (!response.ok) throw new Error('Network response was not ok');
         parseCSV(await response.text());
     } catch (error) {
         console.error('Error fetching CSV:', error);
         frontWord.textContent = '請上傳 CSV';
     }
+}
+
+// 難度等級正規化：相容舊版以分數區間標示的 CSV
+function normalizeBand(v) {
+    v = (v || '').trim();
+    return LEGACY_BAND_MAP[v] || v;
 }
 
 function parseCSV(csvText) {
@@ -1050,7 +1076,7 @@ function parseCSV(csvText) {
                 example: row['例句'] || row['Examples'] || row['example'] || '',
                 category: row['分類'] || row['category'] || '',
                 star: parseInt(row['星級'] || row['star'] || '0', 10) || 0,
-                band: row['多益分數區間'] || row['band'] || ''
+                band: normalizeBand(row['難度等級'] || row['多益分數區間'] || row['band'] || '')
             })).filter(c => c.word && c.word.trim() !== '');
 
             sessionStats = { again: 0, hard: 0, good: 0, easy: 0 };
@@ -1182,7 +1208,7 @@ function renderCard() {
     const meta = CATEGORY_META[card.category] || DEFAULT_META;
     catBar.style.background = meta.bg;
     cardIcon.className = 'cat-icon ' + meta.icon;
-    cardCatLabel.textContent = card.category || '多益字彙';
+    cardCatLabel.textContent = card.category || '實用字彙';
     cardCatMeta.textContent = s ? `已複習 ${s.reps} 次` : '第一次見面';
 
     /* 【原則1｜建立外語腦】中文遮罩 */
@@ -1273,12 +1299,12 @@ function buildAiPrompt(card, note) {
     const ex = splitExample(card.example);
     const mySentence = (note && note.sentence) ? note.sentence : '（把你的造句貼在這裡）';
     return [
-        `你是我的英文寫作與口說教練。我正在背多益單字「${card.word}」（${card.pos}，中文意思：${card.definition}）。`,
+        `你是我的英文寫作與口說教練。我正在學英文單字「${card.word}」（${card.pos}，中文意思：${card.definition}）。`,
         ``,
         `1. 我造的句子是：「${mySentence}」`,
         `   請不要直接照我的中文思維直譯。先幫我「預編輯」：指出我的句子結構哪裡不像母語者，改寫成道地英文，並說明你改了什麼、為什麼。`,
         `2. 給我 3 組這個字最常用的固定搭配（collocation / chunk），每組附一個商用情境短句。`,
-        `3. 用這個字寫 2 個多益情境例句（辦公、會議、客服等），附中文翻譯。`,
+        `3. 用這個字寫 2 個實用情境例句（日常生活或商務場合，如辦公、會議、客服等），附中文翻譯。`,
         `4. 最後用一句話描述這個字的「核心意象」，幫我記住畫面而不是中文字。`,
         ``,
         `參考例句：${ex.en || '（無）'}`
@@ -1604,7 +1630,7 @@ $('btn-reset').addEventListener('click', () => {
         srs: {}, notes: {},
         daily: { date: todayStr(), done: 0 },
         streak: { count: 0, lastDate: '' },
-        settings: { level: '400-600', iplus: true, goal: 20, brain: false }
+        settings: { level: '基礎', iplus: true, goal: 20, brain: false }
     };
     sessionStats = { again: 0, hard: 0, good: 0, easy: 0 };
     saveStore(); syncSettingsUI(); syncBrainBtn(); updateStatsUI();
