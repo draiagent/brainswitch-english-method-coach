@@ -871,6 +871,7 @@ let isFlipped = false;
 let sessionStats = { again: 0, hard: 0, good: 0, easy: 0 };
 let recognizer = null;
 let recognizing = false;
+let lastPoolSize = 0;   // 上次建立佇列時符合條件的字數，用於區分「學完了」與「沒有字」
 
 // ---- 持久化資料 ----
 let store = {
@@ -1159,7 +1160,9 @@ function targetBands() {
 function buildQueue() {
     const now = Date.now();
     const bands = targetBands();
-    const pool = bands ? allCards.filter(c => bands.includes(c.band)) : allCards.slice();
+    // 未標難度等級的卡片一律納入（該欄位非必填，不能因為沒填就整批消失）
+    const pool = bands ? allCards.filter(c => !c.band || bands.includes(c.band)) : allCards.slice();
+    lastPoolSize = pool.length;
 
     // 到期複習優先（間隔重複的核心）
     const due = pool.filter(c => {
@@ -1316,10 +1319,34 @@ function showDone() {
     cardFront.classList.add('hidden');
     cardBack.classList.add('hidden');
     doneScreen.classList.remove('hidden');
+    cardCounter.textContent = `0 / 0`;
+
     const total = sessionStats.again + sessionStats.hard + sessionStats.good + sessionStats.easy;
+    const title = doneScreen.querySelector('.big');
+
+    // 沒有任何符合條件的字：這不是「完成」，要講清楚原因與解法
+    if (lastPoolSize === 0) {
+        title.textContent = '⚠️ 沒有可練習的單字';
+        $('done-sub').innerHTML =
+            '目前的程度設定找不到任何單字。可能原因：<br>' +
+            '· 上傳的 CSV 缺少「單字」欄位或內容是空的<br>' +
+            '· 目前程度沒有對應的字 —— 請點右上角 <i class="fa-solid fa-sliders"></i> 改選其他難度等級或「全部程度」';
+        return;
+    }
+
+    // 池子裡還有字，但目前沒有到期的複習、也沒有新字
+    if (total === 0) {
+        title.textContent = '✅ 目前沒有要複習的字';
+        $('done-sub').innerHTML =
+            `這個程度的 <strong>${lastPoolSize}</strong> 個字都學過了，而且還沒到複習時間。<br>` +
+            '間隔重複就是這樣運作的——時間到了才複習最有效。<br>' +
+            '想繼續練習，可以到 <i class="fa-solid fa-sliders"></i> 設定調高難度等級。';
+        return;
+    }
+
+    title.textContent = '🎉 本回合完成';
     $('done-sub').innerHTML = `本回合完成 <strong>${total}</strong> 張<br>今日累計 <strong>${store.daily.done}</strong> / ${store.settings.goal} 張　連續 <strong>${store.streak.count}</strong> 天<br>` +
         (store.daily.done >= store.settings.goal ? '今日任務已達標，明天再來保持連續紀錄 🔥' : '再一輪就達標了');
-    cardCounter.textContent = `0 / 0`;
 }
 
 function updateStatsUI() {
