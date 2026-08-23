@@ -89,7 +89,7 @@ body {
 .badge-good { color: var(--color-good); }
 .badge-easy { color: var(--color-easy); }
 
-/* 【原則2｜環境推動力】連續學習天數 */
+/* 【原則2｜嵌入日常】連續學習天數 */
 .streak-chip {
     display: inline-flex;
     align-items: center;
@@ -140,7 +140,7 @@ body {
 .icon-btn:hover { background-color: #f1f5f9; color: #334155; border-color: #94a3b8; }
 .icon-btn.on { background: #eef2ff; color: #4f46e5; border-color: #a5b4fc; }
 
-/* 【原則3｜內容型學習】今日任務以「張數」計，不用時間 */
+/* 【原則3｜以完成量計進度】今日任務以「張數」計，不用時間 */
 .task-line {
     display: flex;
     align-items: center;
@@ -225,7 +225,7 @@ body {
 
 .back-card-inner { display: flex; flex-direction: column; height: 100%; padding: 16px; gap: 12px; }
 
-/* 【原則5｜核心意象】分類圖示條（無金鑰，取代照片圖庫） */
+/* 【原則5｜記畫面不記字】分類圖示條（無金鑰，取代照片圖庫） */
 .cat-bar {
     display: flex; align-items: center; gap: 12px;
     border-radius: var(--border-radius-md);
@@ -243,7 +243,7 @@ body {
 .vocab-translation { font-weight: 700; font-size: 18px; color: #ffffff; }
 .vocab-forms, .vocab-collocation { color: #cbd5e1; }
 
-/* 【原則1｜建立外語腦】中文遮罩：先想英文，點擊才揭曉中文 */
+/* 【原則1｜先用外語想】中文遮罩：先想英文，點擊才揭曉中文 */
 .zh-mask {
     filter: blur(7px);
     cursor: pointer;
@@ -253,7 +253,7 @@ body {
 .zh-mask:hover { filter: blur(4px); }
 .zh-mask.revealed { filter: none; cursor: default; }
 
-/* 【原則6｜語言組塊】語言積木區 */
+/* 【原則6｜整組記固定語塊】語言積木區 */
 .chunk-box {
     background-color: var(--card-inner-box);
     border-left: 4px solid #818cf8;
@@ -365,7 +365,7 @@ body {
 }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
 
-/* 【原則7｜九秒記憶法】評分按鈕，附下次複習間隔 */
+/* 【原則7｜短間隔多次複習】評分按鈕，附下次複習間隔 */
 .rating-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: auto; padding-top: 4px; }
 
 .rate-btn {
@@ -569,7 +569,7 @@ body {
         </div>
     </header>
 
-    <!-- 【原則3｜內容型學習】今日任務以張數計算 -->
+    <!-- 【原則3｜以完成量計進度】今日任務以張數計算 -->
     <div class="task-line">
         <span>今日任務：<strong id="task-done">0</strong> / <strong id="task-goal">20</strong> 張
             <span id="pool-info">程度：－</span></span>
@@ -602,7 +602,7 @@ body {
                     <div class="detail-row vocab-translation" id="back-translation"></div>
                     <div class="detail-row vocab-forms" id="back-forms"></div>
 
-                    <!-- 【原則6｜語言組塊】 -->
+                    <!-- 【原則6｜整組記固定語塊】 -->
                     <div class="chunk-box" id="chunk-box">
                         <button class="audio-btn audio-btn-small" id="btn-speak-chunk" title="朗讀語言積木">
                             <i class="fa-solid fa-volume-high"></i>
@@ -633,7 +633,7 @@ body {
 
                 <!-- 跟讀評分：以機器聽得懂為合格標準 -->
                 <div class="practice-panel hidden" id="panel-asr">
-                    <div class="p-hint">【模仿與語音辨識】念出單字或例句，讓瀏覽器聽寫。機器聽得懂＝發音合格。</div>
+                    <div class="p-hint">【讓機器當發音裁判】念出單字或例句，讓瀏覽器聽寫。機器聽得懂＝發音合格。</div>
                     <div class="p-actions">
                         <button class="p-btn" id="btn-rec-word"><i class="fa-solid fa-microphone"></i> 念單字</button>
                         <button class="p-btn ghost" id="btn-rec-example"><i class="fa-solid fa-microphone"></i> 念例句</button>
@@ -641,9 +641,9 @@ body {
                     <div class="asr-result" id="asr-result"></div>
                 </div>
 
-                <!-- 造句：寫作即高速口說 -->
+                <!-- 造句：寫得出來才說得出來 -->
                 <div class="practice-panel hidden" id="panel-write">
-                    <div class="p-hint">【寫作即高速口說】用這個字寫一句話。先求說得出來，再求精準。</div>
+                    <div class="p-hint">【寫得出來才說得出來】用這個字寫一句話。先求說得出來，再求精準。</div>
                     <textarea id="input-sentence" placeholder="用這個單字造一句英文..."></textarea>
                     <div class="p-actions">
                         <button class="p-btn" id="btn-save-sentence">儲存造句</button>
@@ -651,25 +651,25 @@ body {
                     </div>
                 </div>
 
-                <!-- 意象：核心意象 -->
+                <!-- 意象：記畫面不記字 -->
                 <div class="practice-panel hidden" id="panel-image">
-                    <div class="p-hint">【核心意象】不要背中文字，寫下這個字讓你想到的具體畫面。</div>
+                    <div class="p-hint">【記畫面不記字】不要背中文字，寫下這個字讓你想到的具體畫面。</div>
                     <textarea id="input-image" placeholder="例：abandon → 有人把行李丟在月台上頭也不回地走掉"></textarea>
                     <div class="p-actions">
                         <button class="p-btn" id="btn-save-image">儲存意象</button>
                     </div>
                 </div>
 
-                <!-- AI 提示：AI 預編輯學習 -->
+                <!-- AI 提示：請 AI 先重整再翻譯 -->
                 <div class="practice-panel hidden" id="panel-ai">
-                    <div class="p-hint">【AI 預編輯學習】複製提示詞貼到 ChatGPT / Claude，請 AI 先優化結構再翻譯，不要直接照中文直譯。</div>
+                    <div class="p-hint">【請 AI 先重整再翻譯】複製提示詞貼到 ChatGPT / Claude，請 AI 先優化結構再翻譯，不要直接照中文直譯。</div>
                     <textarea id="ai-prompt" readonly style="min-height:150px"></textarea>
                     <div class="p-actions">
                         <button class="p-btn" id="btn-copy-ai">複製提示詞</button>
                     </div>
                 </div>
 
-                <!-- 【原則7｜九秒記憶法】評分＝下次出現時機 -->
+                <!-- 【原則7｜短間隔多次複習】評分＝下次出現時機 -->
                 <div class="rating-buttons">
                     <button class="rate-btn btn-again" id="btn-again">Again<span class="next-due" id="due-again"></span></button>
                     <button class="rate-btn btn-hard" id="btn-hard">Hard<span class="next-due" id="due-hard"></span></button>
@@ -732,7 +732,7 @@ body {
             </ul>
             <p><strong>5. 為什麼這樣設計？</strong></p>
             <ul>
-                <li>點右上角 <i class="fa-solid fa-diagram-project"></i> 可看「多語學習三大核心策略」心智圖，每條原則都標了對應到介面上的哪個功能。</li>
+                <li>點右上角 <i class="fa-solid fa-diagram-project"></i> 可看「語言學習方法架構」心智圖，每條原則都標了對應到介面上的哪個功能。</li>
                 <li>學習紀錄（間隔重複進度、造句、意象筆記、連續天數）只存在這台電腦的瀏覽器，換裝置或清除瀏覽資料就會消失。</li>
             </ul>
         </div>
@@ -750,7 +750,7 @@ body {
             <div class="setting-row">
                 <div>
                     <div class="setting-label">我的程度</div>
-                    <div class="setting-desc">【接受精神年齡】誠實從簡單的開始，比硬撐難字有效。</div>
+                    <div class="setting-desc">【從說得出口的程度起步】誠實從簡單的開始，比硬撐難字有效。</div>
                 </div>
                 <select id="sel-level">
                     <option value="入門">入門 — 最基本的日常用字</option>
@@ -764,8 +764,8 @@ body {
 
             <div class="setting-row">
                 <div>
-                    <div class="setting-label">i+1 選材</div>
-                    <div class="setting-desc">【i+1】混入一階以上的單字，比當前實力難一點才會進步。</div>
+                    <div class="setting-label">略高一階選材</div>
+                    <div class="setting-desc">【選略高一階的素材】混入一階以上的單字，比當前實力難一點才會進步。</div>
                 </div>
                 <label class="switch"><input type="checkbox" id="chk-iplus"><span class="slider"></span></label>
             </div>
@@ -773,7 +773,7 @@ body {
             <div class="setting-row">
                 <div>
                     <div class="setting-label">每日任務張數</div>
-                    <div class="setting-desc">【內容型學習】用「完成幾張」計量，不用「讀幾分鐘」。</div>
+                    <div class="setting-desc">【以完成量計進度】用「完成幾張」計量，不用「讀幾分鐘」。</div>
                 </div>
                 <input type="number" id="input-goal" min="5" max="300" step="5">
             </div>
@@ -781,7 +781,7 @@ body {
             <div class="setting-row">
                 <div>
                     <div class="setting-label">外語腦模式</div>
-                    <div class="setting-desc">【建立外語腦】中文預設遮住，先用英文理解，點一下才揭曉。</div>
+                    <div class="setting-desc">【先用外語想】中文預設遮住，先用英文理解，點一下才揭曉。</div>
                 </div>
                 <label class="switch"><input type="checkbox" id="chk-brain"><span class="slider"></span></label>
             </div>
@@ -801,46 +801,46 @@ body {
 <div class="modal-overlay hidden" id="mindmap-modal">
     <div class="modal-content wide">
         <div class="modal-header">
-            <h3><i class="fa-solid fa-diagram-project"></i> 多語學習三大核心策略 × 本工具功能對照</h3>
+            <h3><i class="fa-solid fa-diagram-project"></i> 語言學習方法架構 × 本工具功能對照</h3>
             <button class="modal-close" data-close="mindmap-modal">&times;</button>
         </div>
         <div class="modal-body">
             <div class="mm-scroll">
                 <div class="mindmap">
-                    <div class="mm-root">多語學習<br>三大核心策略</div>
+                    <div class="mm-root">語言學習<br>方法架構</div>
                     <div class="mm-branches">
                         <div class="mm-branch">
-                            <div class="mm-branch-title">環境營造<br>與心態轉換</div>
+                            <div class="mm-branch-title">環境<br>與心態</div>
                             <div class="mm-leaves">
-                                <div class="mm-leaf"><span class="leaf-text">建立外語腦：強迫切換理解模式</span><span class="leaf-map">外語腦模式（中文遮罩）</span></div>
-                                <div class="mm-leaf"><span class="leaf-text">環境推動力：將外語塞進日常流程</span><span class="leaf-map">連續天數 🔥 每日任務</span></div>
-                                <div class="mm-leaf"><span class="leaf-text">內容型學習：以完成任務取代時間量化</span><span class="leaf-map">今日任務以「張數」計</span></div>
-                                <div class="mm-leaf"><span class="leaf-text">接受精神年齡：從簡單的自我溝通開始</span><span class="leaf-map">程度設定（難度等級）</span></div>
+                                <div class="mm-leaf"><span class="leaf-text">先用外語想：不讓母語搶先出現</span><span class="leaf-map">外語腦模式（中文遮罩）</span></div>
+                                <div class="mm-leaf"><span class="leaf-text">嵌入日常：讓接觸外語變成固定行程</span><span class="leaf-map">連續天數 🔥 每日任務</span></div>
+                                <div class="mm-leaf"><span class="leaf-text">以完成量計進度：不用時間計量</span><span class="leaf-map">今日任務以「張數」計</span></div>
+                                <div class="mm-leaf"><span class="leaf-text">從說得出口的程度起步：先求能表達</span><span class="leaf-map">程度設定（難度等級）</span></div>
                             </div>
                         </div>
                         <div class="mm-branch">
-                            <div class="mm-branch-title">深度理解<br>與高效輸入</div>
+                            <div class="mm-branch-title">理解<br>與輸入</div>
                             <div class="mm-leaves">
-                                <div class="mm-leaf"><span class="leaf-text">核心意象：抓住單字背後的具體畫面</span><span class="leaf-map">意象筆記＋分類圖示</span></div>
-                                <div class="mm-leaf"><span class="leaf-text">語言組塊：記憶道地的固定搭配詞</span><span class="leaf-map">語言積木 CHUNKS 區</span></div>
-                                <div class="mm-leaf"><span class="leaf-text">九秒記憶法：重視重複頻率而非單次強度</span><span class="leaf-map">間隔重複排程（SRS）</span></div>
-                                <div class="mm-leaf"><span class="leaf-text">i+1 選材：挑選比當前實力難一點的素材</span><span class="leaf-map">i+1 選材開關</span></div>
+                                <div class="mm-leaf"><span class="leaf-text">記畫面不記字：為每個字抓一個場景</span><span class="leaf-map">意象筆記＋分類圖示</span></div>
+                                <div class="mm-leaf"><span class="leaf-text">整組記固定語塊：搭配詞一起背</span><span class="leaf-map">語言積木 CHUNKS 區</span></div>
+                                <div class="mm-leaf"><span class="leaf-text">短間隔多次複習：次數重於單次時長</span><span class="leaf-map">間隔重複排程（SRS）</span></div>
+                                <div class="mm-leaf"><span class="leaf-text">選略高一階的素材：全懂就不會進步</span><span class="leaf-map">略高一階選材開關</span></div>
                             </div>
                         </div>
                         <div class="mm-branch">
-                            <div class="mm-branch-title">實戰輸出<br>與技術應用</div>
+                            <div class="mm-branch-title">輸出<br>與工具</div>
                             <div class="mm-leaves">
-                                <div class="mm-leaf"><span class="leaf-text">寫作即高速口說：鍛鍊表達的精準度</span><span class="leaf-map">造句練習</span></div>
-                                <div class="mm-leaf"><span class="leaf-text">區塊建築原則：直接搬用母語者的積木</span><span class="leaf-map">一鍵複製積木／例句</span></div>
-                                <div class="mm-leaf"><span class="leaf-text">AI 預編輯學習：優化結構後再進行翻譯</span><span class="leaf-map">AI 提示詞產生器</span></div>
-                                <div class="mm-leaf"><span class="leaf-text">模仿與語音辨識：以機器理解作為合格標準</span><span class="leaf-map">跟讀評分（語音辨識）</span></div>
+                                <div class="mm-leaf"><span class="leaf-text">寫得出來才說得出來：用寫作練精準度</span><span class="leaf-map">造句練習</span></div>
+                                <div class="mm-leaf"><span class="leaf-text">借用母語者的句型：沿用現成結構</span><span class="leaf-map">一鍵複製積木／例句</span></div>
+                                <div class="mm-leaf"><span class="leaf-text">請 AI 先重整再翻譯：要它指出結構問題</span><span class="leaf-map">AI 提示詞產生器</span></div>
+                                <div class="mm-leaf"><span class="leaf-text">讓機器當發音裁判：機器聽懂才算過</span><span class="leaf-map">跟讀評分（語音辨識）</span></div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             <p class="mm-note">課堂投影建議：先用這張圖說明「為什麼這樣背單字」，再讓學生打開卡片，每個原則都能在介面上指出對應按鈕。</p>
-            <p class="mm-note">※ 此學習方法架構非本工具原創，本工具的貢獻在於把每條原則實作成可操作的功能。公開教學時建議一併說明。</p>
+            <p class="mm-note">※ 這 12 條做法整理自語言學習領域既有的通用觀念（間隔重複、可理解輸入、語塊學習等），非本工具原創；文字表述由本專案自行撰寫。本工具的貢獻在於把每條做法實作成可操作的功能。</p>
         </div>
     </div>
 </div>
@@ -849,7 +849,7 @@ body {
 <script>
 /* =========================================================
    外語腦英語方法教練 BrainSwitch
-   設計依據：多語學習三大核心策略心智圖（12 條原則）
+   設計依據：語言學習方法架構心智圖（12 條原則）
    每個功能區塊都標註它實作的是哪一條原則。
    ========================================================= */
 
@@ -926,7 +926,7 @@ function todayStr() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-/* 【原則3｜內容型學習】跨日時重置「今日張數」，任務單位是張不是分鐘 */
+/* 【原則3｜以完成量計進度】跨日時重置「今日張數」，任務單位是張不是分鐘 */
 function rolloverDaily() {
     const t = todayStr();
     if (store.daily.date !== t) {
@@ -934,7 +934,7 @@ function rolloverDaily() {
     }
 }
 
-/* 【原則2｜環境推動力】把外語塞進日常：用連續天數維持慣性 */
+/* 【原則2｜嵌入日常】把外語塞進日常：用連續天數維持慣性 */
 function bumpStreak() {
     const t = todayStr();
     if (store.streak.lastDate === t) return;
@@ -1090,7 +1090,7 @@ function parseCSV(csvText) {
 }
 
 /* =========================================================
-   【原則7｜九秒記憶法】間隔重複排程（SM-2 精簡版）
+   【原則7｜短間隔多次複習】間隔重複排程（SM-2 精簡版）
    重點是「重複頻率」而非單次背很久，所以新卡的間隔刻意很短。
    ========================================================= */
 function getSrs(word) {
@@ -1142,7 +1142,7 @@ function humanInterval(days) {
 }
 
 /* =========================================================
-   【原則4｜接受精神年齡】＋【原則8｜i+1 選材】
+   【原則4｜從說得出口的程度起步】＋【原則8｜選略高一階的素材】
    以「我的程度」為底，可選擇混入高一階的單字。
    高星級（＝高頻常用字）優先出現。
    ========================================================= */
@@ -1152,7 +1152,7 @@ function targetBands() {
     const i = BANDS.indexOf(lv);
     if (i < 0) return null;
     const bands = [BANDS[i]];
-    if (store.settings.iplus && i + 1 < BANDS.length) bands.push(BANDS[i + 1]);   // i+1
+    if (store.settings.iplus && i + 1 < BANDS.length) bands.push(BANDS[i + 1]);   // 略高一階
     return bands;
 }
 
@@ -1212,7 +1212,7 @@ function renderCard() {
     cardCatLabel.textContent = card.category || '實用字彙';
     cardCatMeta.textContent = s ? `已複習 ${s.reps} 次` : '第一次見面';
 
-    /* 【原則1｜建立外語腦】中文遮罩 */
+    /* 【原則1｜先用外語想】中文遮罩 */
     const posText = card.pos ? `(${card.pos}) ` : '';
     backTranslation.innerHTML = '';
     backTranslation.append(`${card.word} ${posText}`);
@@ -1225,7 +1225,7 @@ function renderCard() {
         backForms.classList.add('hidden');
     }
 
-    /* 【原則6｜語言組塊】 */
+    /* 【原則6｜整組記固定語塊】 */
     if (card.collocation && card.collocation.trim()) {
         backCollocation.innerHTML = '';
         card.collocation.split('\n').filter(Boolean).forEach((line, i) => {
@@ -1295,7 +1295,7 @@ function toggleAllZh() {
     masks.forEach(m => m.classList.toggle('revealed', anyHidden));
 }
 
-/* 【原則11｜AI 預編輯學習】產生可貼到 ChatGPT / Claude 的提示詞 */
+/* 【原則11｜請 AI 先重整再翻譯】產生可貼到 ChatGPT / Claude 的提示詞 */
 function buildAiPrompt(card, note) {
     const ex = splitExample(card.example);
     const mySentence = (note && note.sentence) ? note.sentence : '（把你的造句貼在這裡）';
@@ -1306,7 +1306,7 @@ function buildAiPrompt(card, note) {
         `   請不要直接照我的中文思維直譯。先幫我「預編輯」：指出我的句子結構哪裡不像母語者，改寫成道地英文，並說明你改了什麼、為什麼。`,
         `2. 給我 3 組這個字最常用的固定搭配（collocation / chunk），每組附一個商用情境短句。`,
         `3. 用這個字寫 2 個實用情境例句（日常生活或商務場合，如辦公、會議、客服等），附中文翻譯。`,
-        `4. 最後用一句話描述這個字的「核心意象」，幫我記住畫面而不是中文字。`,
+        `4. 最後用一句話描述這個字的核心畫面，幫我記住畫面而不是中文字。`,
         ``,
         `參考例句：${ex.en || '（無）'}`
     ].join('\n');
@@ -1375,7 +1375,7 @@ function hideAllPanels() {
 }
 
 /* =========================================================
-   【原則12｜模仿與語音辨識】以機器聽得懂作為發音合格標準
+   【原則12｜讓機器當發音裁判】以機器聽得懂作為發音合格標準
    使用瀏覽器內建 Web Speech API（Chrome / Edge），不需任何金鑰。
    ========================================================= */
 function getRecognizer() {
@@ -1499,7 +1499,7 @@ $('btn-speak-chunk').addEventListener('click', () => {
     if (queue[qIndex]) speak(englishOnly(queue[qIndex].collocation));
 });
 
-/* 【原則10｜區塊建築原則】直接把母語者的積木搬走 */
+/* 【原則10｜借用母語者的句型】直接把母語者的積木搬走 */
 $('btn-copy-chunk').addEventListener('click', () => {
     if (queue[qIndex]) copyText(queue[qIndex].collocation, '已複製語言積木');
 });
@@ -1525,7 +1525,7 @@ document.querySelectorAll('.ptab').forEach(tab => {
     });
 });
 
-/* 【原則9｜寫作即高速口說】＋【原則5｜核心意象】筆記存本機 */
+/* 【原則9｜寫得出來才說得出來】＋【原則5｜記畫面不記字】筆記存本機 */
 function saveNote(field, value) {
     const card = queue[qIndex];
     if (!card) return;
