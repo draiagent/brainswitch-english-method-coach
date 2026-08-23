@@ -1,0 +1,1636 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>外語腦單字卡 BrainSwitch｜AI 時代的多益互動單字卡</title>
+<meta name="description" content="以「多語學習三大核心策略」打造的多益互動單字卡：間隔重複、外語腦中文遮罩、語言積木、語音辨識跟讀、AI 提示詞產生器。近萬字多益字彙，免安裝、免登入、免 API 金鑰。">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root {
+    --bg-page: #f8fafc;
+    --card-bg-front: #ffffff;
+    --card-bg-back: #1d2638;
+    --card-inner-box: #2a3449;
+    --text-primary: #1e293b;
+    --text-light: #f1f5f9;
+    --text-muted: #94a3b8;
+    --color-again: #ef4444;
+    --color-hard: #f97316;
+    --color-good: #22c55e;
+    --color-easy: #3b82f6;
+    --progress-bg: #e2e8f0;
+    --progress-fill: #6366f1;
+    /* 心智圖配色（沿用陳董提供的心智圖視覺） */
+    --mm-root: #4a4a63;
+    --mm-node: #333f3f;
+    --mm-line: #b6bde8;
+    --border-radius-lg: 24px;
+    --border-radius-md: 14px;
+    --border-radius-sm: 8px;
+    --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 16px;
+}
+
+.app-container {
+    width: 100%;
+    max-width: 720px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* ===== 頂部狀態列 ===== */
+.top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 6px 10px;
+    flex-wrap: wrap;
+}
+
+.counter-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #475569;
+}
+
+.stats-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.stat-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; }
+.badge-again { color: var(--color-again); }
+.badge-hard { color: var(--color-hard); }
+.badge-good { color: var(--color-good); }
+.badge-easy { color: var(--color-easy); }
+
+/* 【原則2｜環境推動力】連續學習天數 */
+.streak-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #fed7aa;
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.progress-container {
+    flex: 1;
+    min-width: 140px;
+    height: 8px;
+    background-color: var(--progress-bg);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background-color: var(--progress-fill);
+    border-radius: 999px;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.top-actions { display: flex; align-items: center; gap: 8px; }
+
+.icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #64748b;
+    font-size: 17px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.icon-btn:hover { background-color: #f1f5f9; color: #334155; border-color: #94a3b8; }
+.icon-btn.on { background: #eef2ff; color: #4f46e5; border-color: #a5b4fc; }
+
+/* 【原則3｜內容型學習】今日任務以「張數」計，不用時間 */
+.task-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 14.5px;
+    color: #64748b;
+    padding: 0 10px;
+    flex-wrap: wrap;
+}
+
+.task-line strong { color: #4f46e5; }
+
+/* ===== 卡片 ===== */
+.card-stage { position: relative; width: 100%; min-height: 540px; }
+
+.flashcard {
+    width: 100%;
+    min-height: 540px;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-card);
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.card-front {
+    background-color: var(--card-bg-front);
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 24px;
+    cursor: pointer;
+    position: relative;
+    text-align: center;
+}
+
+.card-front:hover { transform: translateY(-2px); box-shadow: 0 14px 34px -5px rgba(0, 0, 0, 0.1); }
+
+.word-wrapper { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 14px; }
+
+.vocab-word { font-size: 3.6rem; font-weight: 700; color: #1e293b; letter-spacing: -0.5px; word-break: break-word; }
+
+.front-tags { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 8px; }
+
+.tag {
+    font-size: 14px;
+    font-weight: 700;
+    padding: 5px 14px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.tag-star { background: #fefce8; color: #a16207; border-color: #fde68a; }
+.tag-band { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.tag-new { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+.tag-due { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+
+.audio-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 2rem; color: #6366f1; padding: 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.audio-btn:hover { color: #4f46e5; transform: scale(1.15); }
+.audio-btn:active { transform: scale(0.95); }
+
+.flip-hint { position: absolute; bottom: 24px; color: var(--text-muted); font-size: 15px; font-weight: 500; }
+
+/* 背面 */
+.card-back {
+    background-color: var(--card-bg-back);
+    color: var(--text-light);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.back-card-inner { display: flex; flex-direction: column; height: 100%; padding: 16px; gap: 12px; }
+
+/* 【原則5｜核心意象】分類圖示條（無金鑰，取代照片圖庫） */
+.cat-bar {
+    display: flex; align-items: center; gap: 12px;
+    border-radius: var(--border-radius-md);
+    padding: 12px 16px;
+    color: #fff;
+}
+
+.cat-bar .cat-icon { font-size: 1.7rem; }
+.cat-bar .cat-label { font-size: 15px; font-weight: 700; letter-spacing: 1px; }
+.cat-bar .cat-meta { margin-left: auto; font-size: 13.5px; opacity: .9; font-weight: 600; }
+
+.vocab-details { display: flex; flex-direction: column; gap: 10px; padding: 2px 4px; }
+
+.detail-row { font-size: 16px; line-height: 1.55; color: #e2e8f0; white-space: pre-line; }
+.vocab-translation { font-weight: 700; font-size: 18px; color: #ffffff; }
+.vocab-forms, .vocab-collocation { color: #cbd5e1; }
+
+/* 【原則1｜建立外語腦】中文遮罩：先想英文，點擊才揭曉中文 */
+.zh-mask {
+    filter: blur(7px);
+    cursor: pointer;
+    user-select: none;
+    transition: filter 0.2s ease;
+}
+.zh-mask:hover { filter: blur(4px); }
+.zh-mask.revealed { filter: none; cursor: default; }
+
+/* 【原則6｜語言組塊】語言積木區 */
+.chunk-box {
+    background-color: var(--card-inner-box);
+    border-left: 4px solid #818cf8;
+    border-radius: var(--border-radius-sm);
+    padding: 10px 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.chunk-title { font-size: 12.5px; letter-spacing: 1px; color: #a5b4fc; font-weight: 700; margin-bottom: 4px; }
+.chunk-text { font-size: 15px; line-height: 1.6; color: #e2e8f0; white-space: pre-line; }
+
+.example-box {
+    background-color: var(--card-inner-box);
+    border-radius: var(--border-radius-md);
+    padding: 12px 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.audio-btn-small { font-size: 1.15rem; color: #818cf8; margin-top: 2px; flex-shrink: 0; }
+.audio-btn-small:hover { color: #a5b4fc; }
+.example-text { font-size: 15px; line-height: 1.55; color: #e2e8f0; white-space: pre-line; }
+
+.mini-btn {
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.15);
+    color: #cbd5e1;
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 4px 10px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.mini-btn:hover { background: rgba(255,255,255,.16); color: #fff; }
+
+/* 【原則9-12】練習工具列 */
+.practice-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.ptab {
+    flex: 1;
+    min-width: 116px;
+    background: var(--card-inner-box);
+    border: 1px solid rgba(255,255,255,.08);
+    color: #cbd5e1;
+    border-radius: var(--border-radius-sm);
+    padding: 10px 6px;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: all .15s ease;
+}
+.ptab:hover { background: #34405a; color: #fff; }
+.ptab.active { background: #4338ca; color: #fff; border-color: #6366f1; }
+
+.practice-panel {
+    background: var(--card-inner-box);
+    border-radius: var(--border-radius-sm);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.practice-panel .p-hint { font-size: 13px; color: #94a3b8; line-height: 1.5; }
+
+.practice-panel textarea {
+    width: 100%;
+    min-height: 76px;
+    resize: vertical;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,.15);
+    background: #1b2334;
+    color: #e2e8f0;
+    font-size: 15px;
+    line-height: 1.5;
+    padding: 10px;
+}
+
+.p-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.p-btn {
+    background: #4338ca;
+    border: none;
+    color: #fff;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 9px 16px;
+    cursor: pointer;
+}
+.p-btn:hover { filter: brightness(1.12); }
+.p-btn.ghost { background: rgba(255,255,255,.1); }
+.p-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.asr-result { font-size: 15px; line-height: 1.6; }
+.asr-pass { color: #4ade80; font-weight: 700; }
+.asr-fail { color: #fca5a5; font-weight: 700; }
+.asr-heard { color: #cbd5e1; }
+
+.rec-dot {
+    display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+    background: #ef4444; margin-right: 6px;
+    animation: pulse 1s infinite;
+}
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
+
+/* 【原則7｜九秒記憶法】評分按鈕，附下次複習間隔 */
+.rating-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: auto; padding-top: 4px; }
+
+.rate-btn {
+    border: none;
+    background-color: var(--card-inner-box);
+    border-radius: var(--border-radius-sm);
+    padding: 11px 0 9px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+
+.rate-btn:hover { filter: brightness(1.15); transform: translateY(-1px); }
+.rate-btn:active { transform: translateY(1px); }
+.rate-btn .next-due { font-size: 11.5px; font-weight: 600; color: #94a3b8; }
+
+.btn-again { color: var(--color-again); }
+.btn-hard { color: var(--color-hard); }
+.btn-good { color: var(--color-good); }
+.btn-easy { color: var(--color-easy); }
+
+/* 回合完成畫面 */
+.done-screen {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-card);
+    min-height: 540px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px; padding: 40px 24px; text-align: center;
+}
+.done-screen .big { font-size: 2.2rem; font-weight: 800; color: #1e293b; }
+.done-screen .sub { font-size: 16px; color: #64748b; line-height: 1.7; }
+
+.hidden { display: none !important; }
+
+/* ===== Modal ===== */
+.modal-overlay {
+    position: fixed; inset: 0;
+    background-color: rgba(0, 0, 0, 0.45);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 1000; padding: 20px;
+    backdrop-filter: blur(2px);
+    overflow-y: auto;
+}
+
+.modal-content {
+    background-color: #ffffff;
+    border-radius: var(--border-radius-md);
+    max-width: 520px;
+    width: 100%;
+    padding: 20px 24px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    max-height: 88vh;
+    overflow-y: auto;
+}
+
+.modal-content.wide { max-width: 1040px; }
+
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.modal-header h3 { font-size: 19px; color: #1e293b; display: flex; align-items: center; gap: 8px; }
+.modal-close { background: none; border: none; font-size: 26px; cursor: pointer; color: #94a3b8; line-height: 1; }
+.modal-body { font-size: 15px; line-height: 1.65; color: #475569; }
+.modal-body ul { margin: 8px 0 16px 20px; }
+.modal-body code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 14px; color: #6366f1; }
+
+/* 設定 */
+.setting-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px 0; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; }
+.setting-row:last-child { border-bottom: none; }
+.setting-label { font-size: 15px; font-weight: 700; color: #334155; }
+.setting-desc { font-size: 13px; color: #94a3b8; margin-top: 2px; line-height: 1.5; }
+.setting-row select, .setting-row input[type="number"] {
+    font-size: 15px; padding: 8px 10px; border-radius: 8px;
+    border: 1px solid #cbd5e1; background: #fff; color: #1e293b; min-width: 130px;
+}
+
+.switch { position: relative; width: 52px; height: 30px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; inset: 0; background: #cbd5e1; border-radius: 999px; cursor: pointer; transition: .2s; }
+.slider::before { content: ""; position: absolute; width: 24px; height: 24px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: .2s; }
+.switch input:checked + .slider { background: #4f46e5; }
+.switch input:checked + .slider::before { transform: translateX(22px); }
+
+.danger-btn { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; border-radius: 8px; padding: 9px 16px; font-size: 14px; font-weight: 700; cursor: pointer; }
+.danger-btn:hover { background: #fee2e2; }
+
+/* ===== 學習心法心智圖 ===== */
+.mindmap { display: flex; align-items: center; gap: 22px; min-width: 940px; padding: 6px 4px 14px; }
+
+.mm-root {
+    background: var(--mm-root); color: #fff;
+    border-radius: 10px; padding: 18px 20px;
+    font-size: 17px; font-weight: 800; line-height: 1.4;
+    text-align: center; flex-shrink: 0; max-width: 170px;
+}
+
+.mm-branches { display: flex; flex-direction: column; gap: 26px; border-left: 2px solid var(--mm-line); padding-left: 22px; }
+.mm-branch { display: flex; align-items: center; gap: 18px; position: relative; }
+.mm-branch::before { content: ""; position: absolute; left: -22px; top: 50%; width: 22px; height: 2px; background: var(--mm-line); }
+
+.mm-branch-title {
+    background: var(--mm-node); color: #fff;
+    border-radius: 10px; padding: 14px 16px;
+    font-size: 15.5px; font-weight: 800; line-height: 1.4;
+    width: 150px; flex-shrink: 0; text-align: center;
+}
+
+.mm-leaves { display: flex; flex-direction: column; gap: 8px; border-left: 2px solid var(--mm-line); padding-left: 18px; }
+.mm-leaf {
+    background: var(--mm-node); color: #f1f5f9;
+    border-radius: 8px; padding: 10px 14px;
+    position: relative; display: flex; align-items: center; gap: 12px;
+}
+.mm-leaf::before { content: ""; position: absolute; left: -18px; top: 50%; width: 18px; height: 2px; background: var(--mm-line); }
+.mm-leaf .leaf-text { font-size: 14.5px; font-weight: 700; line-height: 1.45; }
+.mm-leaf .leaf-map {
+    margin-left: auto; flex-shrink: 0;
+    font-size: 12.5px; font-weight: 700;
+    background: rgba(255,255,255,.13); color: #c7d2fe;
+    border-radius: 999px; padding: 4px 12px; white-space: nowrap;
+}
+
+.mm-scroll { overflow-x: auto; }
+.mm-note { font-size: 13.5px; color: #64748b; margin-top: 10px; line-height: 1.6; }
+
+/* 品牌標頭與頁尾 */
+.brand {
+    display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+    padding: 2px 10px;
+}
+.brand h1 { font-size: 21px; font-weight: 800; color: #1e293b; letter-spacing: -.3px; }
+.brand .brand-en { font-size: 14px; font-weight: 700; color: #6366f1; letter-spacing: 1px; }
+.brand .brand-tag { font-size: 13.5px; color: #94a3b8; margin-left: auto; }
+
+.site-footer {
+    text-align: center; font-size: 12.5px; color: #94a3b8; line-height: 1.8;
+    padding: 6px 10px 2px;
+}
+.site-footer a { color: #6366f1; text-decoration: none; }
+.site-footer a:hover { text-decoration: underline; }
+
+.toast {
+    position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%);
+    background: #1e293b; color: #fff; padding: 12px 22px; border-radius: 999px;
+    font-size: 15px; font-weight: 600; z-index: 2000; box-shadow: 0 8px 24px rgba(0,0,0,.25);
+}
+
+@media (max-width: 480px) {
+    .vocab-word { font-size: 2.6rem; }
+    .rate-btn { font-size: 14px; }
+    .ptab { min-width: 0; }
+}
+</style>
+</head>
+<body>
+<div class="app-container">
+    <div class="brand">
+        <h1>外語腦單字卡</h1>
+        <span class="brand-en">BrainSwitch</span>
+        <span class="brand-tag">先想英文，再想中文</span>
+    </div>
+
+    <!-- 頂部狀態列 -->
+    <header class="top-bar">
+        <div class="counter-group">
+            <span id="card-counter">0 / 0</span>
+            <div class="stats-group">
+                <span id="count-again" class="stat-badge badge-again" title="Again 次數">0</span>
+                <span id="count-hard" class="stat-badge badge-hard" title="Hard 次數">0</span>
+                <span id="count-good" class="stat-badge badge-good" title="Good 次數">0</span>
+                <span id="count-easy" class="stat-badge badge-easy" title="Easy 次數">0</span>
+            </div>
+        </div>
+
+        <div class="progress-container" title="今日任務進度">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <div class="top-actions">
+            <span class="streak-chip" id="streak-chip" title="連續學習天數"><i class="fa-solid fa-fire"></i> <span id="streak-count">0</span> 天</span>
+
+            <label for="csv-file-input" class="icon-btn" title="上傳 CSV 檔案">
+                <i class="fa-solid fa-arrow-up-from-bracket"></i>
+            </label>
+            <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+
+            <button id="btn-brain" class="icon-btn" title="外語腦模式：遮住中文，先用英文思考">
+                <i class="fa-solid fa-brain"></i>
+            </button>
+            <button id="btn-mindmap" class="icon-btn" title="學習心法心智圖">
+                <i class="fa-solid fa-diagram-project"></i>
+            </button>
+            <button id="btn-settings" class="icon-btn" title="學習設定">
+                <i class="fa-solid fa-sliders"></i>
+            </button>
+            <button id="btn-info" class="icon-btn" title="使用說明">
+                <i class="fa-regular fa-circle-question"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- 【原則3｜內容型學習】今日任務以張數計算 -->
+    <div class="task-line">
+        <span>今日任務：<strong id="task-done">0</strong> / <strong id="task-goal">20</strong> 張
+            <span id="pool-info">程度：－</span></span>
+        <span id="due-info">待複習：－</span>
+    </div>
+
+    <main class="card-stage">
+        <!-- 正面 -->
+        <div class="flashcard card-front" id="card-front">
+            <div class="front-tags" id="front-tags"></div>
+            <div class="word-wrapper">
+                <span class="vocab-word" id="front-word">載入中...</span>
+                <button class="audio-btn" id="btn-speak-word" title="單字發音">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+            </div>
+            <div class="flip-hint">點擊卡片查看解析（或按空白鍵）</div>
+        </div>
+
+        <!-- 背面 -->
+        <div class="flashcard card-back hidden" id="card-back">
+            <div class="back-card-inner">
+                <div class="cat-bar" id="cat-bar">
+                    <i class="cat-icon" id="card-icon"></i>
+                    <span class="cat-label" id="card-cat-label"></span>
+                    <span class="cat-meta" id="card-cat-meta"></span>
+                </div>
+
+                <div class="vocab-details">
+                    <div class="detail-row vocab-translation" id="back-translation"></div>
+                    <div class="detail-row vocab-forms" id="back-forms"></div>
+
+                    <!-- 【原則6｜語言組塊】 -->
+                    <div class="chunk-box" id="chunk-box">
+                        <button class="audio-btn audio-btn-small" id="btn-speak-chunk" title="朗讀語言積木">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                        <div style="flex:1">
+                            <div class="chunk-title">語言積木 CHUNKS</div>
+                            <div class="chunk-text" id="back-collocation"></div>
+                        </div>
+                        <button class="mini-btn" id="btn-copy-chunk">複製</button>
+                    </div>
+
+                    <div class="example-box" id="example-box">
+                        <button class="audio-btn audio-btn-small" id="btn-speak-example" title="例句發音">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                        <span class="example-text" id="back-example" style="flex:1"></span>
+                        <button class="mini-btn" id="btn-copy-example">複製</button>
+                    </div>
+                </div>
+
+                <!-- 【原則9-12】實戰輸出練習 -->
+                <div class="practice-tabs">
+                    <button class="ptab" data-panel="asr"><i class="fa-solid fa-microphone"></i> 跟讀評分</button>
+                    <button class="ptab" data-panel="write"><i class="fa-solid fa-pen"></i> 造句</button>
+                    <button class="ptab" data-panel="image"><i class="fa-solid fa-lightbulb"></i> 意象</button>
+                    <button class="ptab" data-panel="ai"><i class="fa-solid fa-robot"></i> AI 提示</button>
+                </div>
+
+                <!-- 跟讀評分：以機器聽得懂為合格標準 -->
+                <div class="practice-panel hidden" id="panel-asr">
+                    <div class="p-hint">【模仿與語音辨識】念出單字或例句，讓瀏覽器聽寫。機器聽得懂＝發音合格。</div>
+                    <div class="p-actions">
+                        <button class="p-btn" id="btn-rec-word"><i class="fa-solid fa-microphone"></i> 念單字</button>
+                        <button class="p-btn ghost" id="btn-rec-example"><i class="fa-solid fa-microphone"></i> 念例句</button>
+                    </div>
+                    <div class="asr-result" id="asr-result"></div>
+                </div>
+
+                <!-- 造句：寫作即高速口說 -->
+                <div class="practice-panel hidden" id="panel-write">
+                    <div class="p-hint">【寫作即高速口說】用這個字寫一句話。先求說得出來，再求精準。</div>
+                    <textarea id="input-sentence" placeholder="用這個單字造一句英文..."></textarea>
+                    <div class="p-actions">
+                        <button class="p-btn" id="btn-save-sentence">儲存造句</button>
+                        <button class="p-btn ghost" id="btn-speak-sentence">朗讀我的句子</button>
+                    </div>
+                </div>
+
+                <!-- 意象：核心意象 -->
+                <div class="practice-panel hidden" id="panel-image">
+                    <div class="p-hint">【核心意象】不要背中文字，寫下這個字讓你想到的具體畫面。</div>
+                    <textarea id="input-image" placeholder="例：abandon → 有人把行李丟在月台上頭也不回地走掉"></textarea>
+                    <div class="p-actions">
+                        <button class="p-btn" id="btn-save-image">儲存意象</button>
+                    </div>
+                </div>
+
+                <!-- AI 提示：AI 預編輯學習 -->
+                <div class="practice-panel hidden" id="panel-ai">
+                    <div class="p-hint">【AI 預編輯學習】複製提示詞貼到 ChatGPT / Claude，請 AI 先優化結構再翻譯，不要直接照中文直譯。</div>
+                    <textarea id="ai-prompt" readonly style="min-height:150px"></textarea>
+                    <div class="p-actions">
+                        <button class="p-btn" id="btn-copy-ai">複製提示詞</button>
+                    </div>
+                </div>
+
+                <!-- 【原則7｜九秒記憶法】評分＝下次出現時機 -->
+                <div class="rating-buttons">
+                    <button class="rate-btn btn-again" id="btn-again">Again<span class="next-due" id="due-again"></span></button>
+                    <button class="rate-btn btn-hard" id="btn-hard">Hard<span class="next-due" id="due-hard"></span></button>
+                    <button class="rate-btn btn-good" id="btn-good">Good<span class="next-due" id="due-good"></span></button>
+                    <button class="rate-btn btn-easy" id="btn-easy">Easy<span class="next-due" id="due-easy"></span></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 回合完成 -->
+        <div class="done-screen hidden" id="done-screen">
+            <div class="big">🎉 本回合完成</div>
+            <div class="sub" id="done-sub"></div>
+            <button class="p-btn" id="btn-next-round">再來一輪</button>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        外語腦單字卡 BrainSwitch ・ 學習紀錄只存在本機瀏覽器，不會上傳<br>
+        單字資料來源：<a href="https://huggingface.co/datasets/kknono668/toeic-vocab-tw" target="_blank" rel="noopener">kknono668/toeic-vocab-tw</a>
+        （<a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh-hant" target="_blank" rel="noopener">CC BY-SA 4.0</a>）
+    </footer>
+</div>
+
+<!-- 使用說明 -->
+<div class="modal-overlay hidden" id="info-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-circle-info"></i> 外語腦單字卡 使用說明</h3>
+            <button class="modal-close" data-close="info-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="background:#eef2ff;border-radius:8px;padding:10px 14px;margin-bottom:14px;">
+                <strong>三步驟開始：</strong>① 點 <i class="fa-solid fa-sliders"></i> 設定你的程度 →
+                ② 點卡片翻面看解析 → ③ 依熟悉度按 Again / Hard / Good / Easy，系統會安排這個字下次何時再出現。
+            </p>
+            <p><strong>1. 互動方式：</strong></p>
+            <ul>
+                <li>點擊正面卡片或按 <code>空白鍵</code> / <code>Enter</code> 翻開背面。</li>
+                <li>點擊 🔊 聆聽單字、語言積木或例句（瀏覽器內建語音）。</li>
+                <li>背面點 <strong>Again / Hard / Good / Easy</strong>，決定這個字<strong>下次何時再出現</strong>（間隔重複），按鈕下方會顯示預估間隔。</li>
+                <li>按 <code>Again</code> 的字會在本回合稍後再出現一次，符合「重複頻率優先」。</li>
+            </ul>
+            <p><strong>2. 鍵盤快捷鍵：</strong></p>
+            <ul>
+                <li><code>空白鍵</code> / <code>Enter</code>：翻轉卡片</li>
+                <li><code>1</code> / <code>2</code> / <code>3</code> / <code>4</code>：Again / Hard / Good / Easy</li>
+                <li><code>R</code>：朗讀英文單字</li>
+                <li><code>Z</code>：揭曉／遮回中文（外語腦模式）</li>
+            </ul>
+            <p><strong>3. 四個練習工具：</strong></p>
+            <ul>
+                <li><strong>跟讀評分</strong>：念給瀏覽器聽，機器聽得懂才算過（需 Chrome / Edge 並允許麥克風）。</li>
+                <li><strong>造句</strong>、<strong>意象</strong>：寫下的內容會存在這台電腦的瀏覽器裡，下次看到同一個字會自動帶出。</li>
+                <li><strong>AI 提示</strong>：一鍵複製提示詞，貼到 ChatGPT / Claude 請它批改。</li>
+            </ul>
+            <p><strong>4. 匯入自訂 CSV：</strong></p>
+            <ul>
+                <li>點右上角 <i class="fa-solid fa-arrow-up-from-bracket"></i>，欄位需含：單字、中文定義、詞性、【詞性變化】、搭配詞、例句、分類、星級、多益分數區間。</li>
+            </ul>
+            <p><strong>5. 為什麼這樣設計？</strong></p>
+            <ul>
+                <li>點右上角 <i class="fa-solid fa-diagram-project"></i> 可看「多語學習三大核心策略」心智圖，每條原則都標了對應到介面上的哪個功能。</li>
+                <li>學習紀錄（間隔重複進度、造句、意象筆記、連續天數）只存在這台電腦的瀏覽器，換裝置或清除瀏覽資料就會消失。</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- 學習設定 -->
+<div class="modal-overlay hidden" id="settings-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-sliders"></i> 學習設定</h3>
+            <button class="modal-close" data-close="settings-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="setting-row">
+                <div>
+                    <div class="setting-label">我的程度</div>
+                    <div class="setting-desc">【接受精神年齡】誠實從簡單的開始，比硬撐難字有效。</div>
+                </div>
+                <select id="sel-level">
+                    <option value="0-400">0-400（入門）</option>
+                    <option value="400-600">400-600（基礎）</option>
+                    <option value="600-780">600-780（中階）</option>
+                    <option value="780-900">780-900（高階）</option>
+                    <option value="900+">900+（頂標）</option>
+                    <option value="all">全部程度</option>
+                </select>
+            </div>
+
+            <div class="setting-row">
+                <div>
+                    <div class="setting-label">i+1 選材</div>
+                    <div class="setting-desc">【i+1】混入一階以上的單字，比當前實力難一點才會進步。</div>
+                </div>
+                <label class="switch"><input type="checkbox" id="chk-iplus"><span class="slider"></span></label>
+            </div>
+
+            <div class="setting-row">
+                <div>
+                    <div class="setting-label">每日任務張數</div>
+                    <div class="setting-desc">【內容型學習】用「完成幾張」計量，不用「讀幾分鐘」。</div>
+                </div>
+                <input type="number" id="input-goal" min="5" max="300" step="5">
+            </div>
+
+            <div class="setting-row">
+                <div>
+                    <div class="setting-label">外語腦模式</div>
+                    <div class="setting-desc">【建立外語腦】中文預設遮住，先用英文理解，點一下才揭曉。</div>
+                </div>
+                <label class="switch"><input type="checkbox" id="chk-brain"><span class="slider"></span></label>
+            </div>
+
+            <div class="setting-row">
+                <div>
+                    <div class="setting-label">學習紀錄</div>
+                    <div class="setting-desc" id="record-desc">－</div>
+                </div>
+                <button class="danger-btn" id="btn-reset">清除全部紀錄</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 學習心法心智圖 -->
+<div class="modal-overlay hidden" id="mindmap-modal">
+    <div class="modal-content wide">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-diagram-project"></i> 多語學習三大核心策略 × 本工具功能對照</h3>
+            <button class="modal-close" data-close="mindmap-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="mm-scroll">
+                <div class="mindmap">
+                    <div class="mm-root">多語學習<br>三大核心策略</div>
+                    <div class="mm-branches">
+                        <div class="mm-branch">
+                            <div class="mm-branch-title">環境營造<br>與心態轉換</div>
+                            <div class="mm-leaves">
+                                <div class="mm-leaf"><span class="leaf-text">建立外語腦：強迫切換理解模式</span><span class="leaf-map">外語腦模式（中文遮罩）</span></div>
+                                <div class="mm-leaf"><span class="leaf-text">環境推動力：將外語塞進日常流程</span><span class="leaf-map">連續天數 🔥 每日任務</span></div>
+                                <div class="mm-leaf"><span class="leaf-text">內容型學習：以完成任務取代時間量化</span><span class="leaf-map">今日任務以「張數」計</span></div>
+                                <div class="mm-leaf"><span class="leaf-text">接受精神年齡：從簡單的自我溝通開始</span><span class="leaf-map">程度設定（分數區間）</span></div>
+                            </div>
+                        </div>
+                        <div class="mm-branch">
+                            <div class="mm-branch-title">深度理解<br>與高效輸入</div>
+                            <div class="mm-leaves">
+                                <div class="mm-leaf"><span class="leaf-text">核心意象：抓住單字背後的具體畫面</span><span class="leaf-map">意象筆記＋分類圖示</span></div>
+                                <div class="mm-leaf"><span class="leaf-text">語言組塊：記憶道地的固定搭配詞</span><span class="leaf-map">語言積木 CHUNKS 區</span></div>
+                                <div class="mm-leaf"><span class="leaf-text">九秒記憶法：重視重複頻率而非單次強度</span><span class="leaf-map">間隔重複排程（SRS）</span></div>
+                                <div class="mm-leaf"><span class="leaf-text">i+1 選材：挑選比當前實力難一點的素材</span><span class="leaf-map">i+1 選材開關</span></div>
+                            </div>
+                        </div>
+                        <div class="mm-branch">
+                            <div class="mm-branch-title">實戰輸出<br>與技術應用</div>
+                            <div class="mm-leaves">
+                                <div class="mm-leaf"><span class="leaf-text">寫作即高速口說：鍛鍊表達的精準度</span><span class="leaf-map">造句練習</span></div>
+                                <div class="mm-leaf"><span class="leaf-text">區塊建築原則：直接搬用母語者的積木</span><span class="leaf-map">一鍵複製積木／例句</span></div>
+                                <div class="mm-leaf"><span class="leaf-text">AI 預編輯學習：優化結構後再進行翻譯</span><span class="leaf-map">AI 提示詞產生器</span></div>
+                                <div class="mm-leaf"><span class="leaf-text">模仿與語音辨識：以機器理解作為合格標準</span><span class="leaf-map">跟讀評分（語音辨識）</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="mm-note">課堂投影建議：先用這張圖說明「為什麼這樣背單字」，再讓學生打開卡片，每個原則都能在介面上指出對應按鈕。</p>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script>
+/* =========================================================
+   多益互動單字卡
+   設計依據：多語學習三大核心策略心智圖（12 條原則）
+   每個功能區塊都標註它實作的是哪一條原則。
+   ========================================================= */
+
+const STORE_KEY = 'toeic-vocab-v2';
+const BANDS = ['0-400', '400-600', '600-780', '780-900', '900+'];
+const DAY = 86400000;
+
+// ---- 應用狀態 ----
+let allCards = [];      // 全部單字
+let queue = [];         // 本回合佇列
+let qIndex = 0;
+let isFlipped = false;
+let sessionStats = { again: 0, hard: 0, good: 0, easy: 0 };
+let recognizer = null;
+let recognizing = false;
+
+// ---- 持久化資料 ----
+let store = {
+    srs: {},            // { word: {ease, interval(天), due(ms), reps, lapses} }
+    notes: {},          // { word: {image, sentence} }
+    daily: { date: '', done: 0 },
+    streak: { count: 0, lastDate: '' },
+    settings: { level: '400-600', iplus: true, goal: 20, brain: false }
+};
+
+function loadStore() {
+    try {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            store = Object.assign(store, parsed);
+            store.settings = Object.assign({ level: '400-600', iplus: true, goal: 20, brain: false }, parsed.settings || {});
+            store.daily = Object.assign({ date: '', done: 0 }, parsed.daily || {});
+            store.streak = Object.assign({ count: 0, lastDate: '' }, parsed.streak || {});
+            store.srs = parsed.srs || {};
+            store.notes = parsed.notes || {};
+        }
+    } catch (e) {
+        console.warn('讀取學習紀錄失敗，改用預設值', e);
+    }
+    rolloverDaily();
+}
+
+function saveStore() {
+    try {
+        localStorage.setItem(STORE_KEY, JSON.stringify(store));
+    } catch (e) {
+        console.warn('儲存學習紀錄失敗（可能是瀏覽器空間已滿）', e);
+    }
+}
+
+function todayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/* 【原則3｜內容型學習】跨日時重置「今日張數」，任務單位是張不是分鐘 */
+function rolloverDaily() {
+    const t = todayStr();
+    if (store.daily.date !== t) {
+        store.daily = { date: t, done: 0 };
+    }
+}
+
+/* 【原則2｜環境推動力】把外語塞進日常：用連續天數維持慣性 */
+function bumpStreak() {
+    const t = todayStr();
+    if (store.streak.lastDate === t) return;
+    const yesterday = new Date(Date.now() - DAY);
+    const yStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+    store.streak.count = (store.streak.lastDate === yStr) ? store.streak.count + 1 : 1;
+    store.streak.lastDate = t;
+}
+
+// ---- 分類圖示（無需 API 金鑰的視覺化，取代照片圖庫）----
+const CATEGORY_META = {
+    '一般專業':       { icon: 'fa-solid fa-briefcase',        bg: 'linear-gradient(135deg,#6366f1,#4f46e5)' },
+    '人力資源':       { icon: 'fa-solid fa-users',            bg: 'linear-gradient(135deg,#ec4899,#db2777)' },
+    '住宿與餐飲':     { icon: 'fa-solid fa-utensils',         bg: 'linear-gradient(135deg,#f97316,#ea580c)' },
+    '客戶服務':       { icon: 'fa-solid fa-headset',          bg: 'linear-gradient(135deg,#06b6d4,#0891b2)' },
+    '採購與物流':     { icon: 'fa-solid fa-truck-fast',       bg: 'linear-gradient(135deg,#84cc16,#65a30d)' },
+    '旅遊與交通':     { icon: 'fa-solid fa-plane-departure',  bg: 'linear-gradient(135deg,#3b82f6,#2563eb)' },
+    '會議與簡報':     { icon: 'fa-solid fa-chalkboard-user',  bg: 'linear-gradient(135deg,#8b5cf6,#7c3aed)' },
+    '法務合規與安全': { icon: 'fa-solid fa-scale-balanced',   bg: 'linear-gradient(135deg,#64748b,#475569)' },
+    '溝通互動':       { icon: 'fa-solid fa-comments',         bg: 'linear-gradient(135deg,#14b8a6,#0d9488)' },
+    '營運管理':       { icon: 'fa-solid fa-gears',            bg: 'linear-gradient(135deg,#0ea5e9,#0284c7)' },
+    '物業與不動產':   { icon: 'fa-solid fa-building',         bg: 'linear-gradient(135deg,#a16207,#854d0e)' },
+    '科技與技術支援': { icon: 'fa-solid fa-laptop-code',      bg: 'linear-gradient(135deg,#22c55e,#16a34a)' },
+    '行銷與銷售':     { icon: 'fa-solid fa-bullhorn',         bg: 'linear-gradient(135deg,#f43f5e,#e11d48)' },
+    '辦公日常':       { icon: 'fa-solid fa-building-columns', bg: 'linear-gradient(135deg,#6d28d9,#5b21b6)' },
+    '金融與會計':     { icon: 'fa-solid fa-sack-dollar',      bg: 'linear-gradient(135deg,#eab308,#ca8a04)' }
+};
+const DEFAULT_META = { icon: 'fa-solid fa-book', bg: 'linear-gradient(135deg,#475569,#334155)' };
+
+// ---- DOM ----
+const $ = id => document.getElementById(id);
+const cardCounter = $('card-counter');
+const progressBar = $('progress-bar');
+const cardFront = $('card-front');
+const cardBack = $('card-back');
+const doneScreen = $('done-screen');
+const frontWord = $('front-word');
+const frontTags = $('front-tags');
+const catBar = $('cat-bar');
+const cardIcon = $('card-icon');
+const cardCatLabel = $('card-cat-label');
+const cardCatMeta = $('card-cat-meta');
+const backTranslation = $('back-translation');
+const backForms = $('back-forms');
+const backCollocation = $('back-collocation');
+const chunkBox = $('chunk-box');
+const backExample = $('back-example');
+const exampleBox = $('example-box');
+const inputSentence = $('input-sentence');
+const inputImage = $('input-image');
+const aiPrompt = $('ai-prompt');
+const asrResult = $('asr-result');
+
+// ---- 小工具 ----
+function toast(msg) {
+    const el = document.createElement('div');
+    el.className = 'toast';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2000);
+}
+
+function copyText(text, okMsg) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => toast(okMsg)).catch(() => fallbackCopy(text, okMsg));
+    } else {
+        fallbackCopy(text, okMsg);
+    }
+}
+
+function fallbackCopy(text, okMsg) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); toast(okMsg); }
+    catch (e) { toast('複製失敗，請手動選取'); }
+    ta.remove();
+}
+
+/* 語音合成：只念英文部分，中文不念 */
+function speak(text) {
+    if (!text || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text.trim());
+    utterance.lang = 'en-US';
+    utterance.rate = 0.9;
+    window.speechSynthesis.speak(utterance);
+}
+
+function englishOnly(text) {
+    if (!text) return '';
+    return text.split('\n')
+        .map(line => (line.match(/[A-Za-z][A-Za-z0-9\s,.'"!?:;()\-]*/g) || []).join(' ').trim())
+        .filter(Boolean)
+        .join('. ');
+}
+
+// 例句欄位格式為「英文\n中文」
+function splitExample(text) {
+    if (!text) return { en: '', zh: '' };
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    const en = lines.find(l => /[A-Za-z]/.test(l) && !/[一-龥]/.test(l)) || lines[0] || '';
+    const zh = lines.filter(l => l !== en).join('\n');
+    return { en, zh };
+}
+
+// ---- 載入資料 ----
+async function loadDefaultCSV() {
+    try {
+        const response = await fetch('toeic-vocab-data.csv');
+        if (!response.ok) throw new Error('Network response was not ok');
+        parseCSV(await response.text());
+    } catch (error) {
+        console.error('Error fetching CSV:', error);
+        frontWord.textContent = '請上傳 CSV';
+    }
+}
+
+function parseCSV(csvText) {
+    Papa.parse(csvText, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+            if (!results.data || !results.data.length) return;
+            allCards = results.data.map(row => ({
+                word: row['單字'] || row['English Word'] || row['word'] || '',
+                definition: row['中文定義'] || row['Chinese Definition'] || row['definition'] || '',
+                pos: row['詞性'] || row['Parts of Speech'] || row['pos'] || '',
+                forms: row['【詞性變化】'] || row['Word Forms'] || row['forms'] || '',
+                collocation: row['搭配詞'] || row['Collocations'] || row['collocation'] || '',
+                example: row['例句'] || row['Examples'] || row['example'] || '',
+                category: row['分類'] || row['category'] || '',
+                star: parseInt(row['星級'] || row['star'] || '0', 10) || 0,
+                band: row['多益分數區間'] || row['band'] || ''
+            })).filter(c => c.word && c.word.trim() !== '');
+
+            sessionStats = { again: 0, hard: 0, good: 0, easy: 0 };
+            buildQueue();
+            updateStatsUI();
+            renderCard();
+        },
+        error: (err) => alert('CSV 解析失敗：' + err.message)
+    });
+}
+
+/* =========================================================
+   【原則7｜九秒記憶法】間隔重複排程（SM-2 精簡版）
+   重點是「重複頻率」而非單次背很久，所以新卡的間隔刻意很短。
+   ========================================================= */
+function getSrs(word) {
+    return store.srs[word] || null;
+}
+
+function previewInterval(word, rating) {
+    const s = getSrs(word);
+    const ease = s ? s.ease : 2.5;
+    const prev = s ? s.interval : 0;
+    if (rating === 'again') return 0;                       // 本回合稍後再出現
+    if (!s || prev === 0) {                                  // 新卡：短間隔、高頻率
+        if (rating === 'hard') return 10 / 1440;             // 10 分鐘
+        if (rating === 'good') return 1;                     // 明天
+        return 3;                                            // easy：3 天
+    }
+    if (rating === 'hard') return Math.max(prev * 1.2, 10 / 1440);
+    if (rating === 'good') return Math.max(prev * ease, 1);
+    return Math.max(prev * ease * 1.3, 2);
+}
+
+function applyRating(card, rating) {
+    const now = Date.now();
+    const s = getSrs(card.word) || { ease: 2.5, interval: 0, due: now, reps: 0, lapses: 0 };
+    const interval = previewInterval(card.word, rating);
+
+    if (rating === 'again') {
+        s.lapses++;
+        s.ease = Math.max(1.3, s.ease - 0.2);
+        s.interval = 0;
+        s.due = now;
+    } else {
+        if (rating === 'hard') s.ease = Math.max(1.3, s.ease - 0.15);
+        if (rating === 'easy') s.ease = Math.min(3.0, s.ease + 0.15);
+        s.interval = interval;
+        s.due = now + interval * DAY;
+    }
+    s.reps++;
+    store.srs[card.word] = s;
+}
+
+function humanInterval(days) {
+    if (days <= 0) return '稍後再現';
+    if (days < 1 / 24) return `${Math.round(days * 1440)} 分鐘`;
+    if (days < 1) return `${Math.round(days * 24)} 小時`;
+    if (days < 2) return '明天';
+    if (days < 30) return `${Math.round(days)} 天`;
+    return `${(days / 30).toFixed(1)} 個月`;
+}
+
+/* =========================================================
+   【原則4｜接受精神年齡】＋【原則8｜i+1 選材】
+   以「我的程度」為底，可選擇混入高一階的單字。
+   高星級（＝高頻常用字）優先出現。
+   ========================================================= */
+function targetBands() {
+    const lv = store.settings.level;
+    if (lv === 'all') return null;                 // null = 不限
+    const i = BANDS.indexOf(lv);
+    if (i < 0) return null;
+    const bands = [BANDS[i]];
+    if (store.settings.iplus && i + 1 < BANDS.length) bands.push(BANDS[i + 1]);   // i+1
+    return bands;
+}
+
+function buildQueue() {
+    const now = Date.now();
+    const bands = targetBands();
+    const pool = bands ? allCards.filter(c => bands.includes(c.band)) : allCards.slice();
+
+    // 到期複習優先（間隔重複的核心）
+    const due = pool.filter(c => {
+        const s = getSrs(c.word);
+        return s && s.due <= now;
+    }).sort((a, b) => getSrs(a.word).due - getSrs(b.word).due);
+
+    // 新字：高星級（高頻字）先學
+    const fresh = pool.filter(c => !getSrs(c.word))
+        .sort((a, b) => (b.star - a.star) || a.word.localeCompare(b.word));
+
+    const remain = Math.max(store.settings.goal - store.daily.done, 10);
+    queue = due.concat(fresh).slice(0, Math.max(remain, 10));
+    qIndex = 0;
+
+    $('pool-info').textContent = `程度：${bands ? bands.join(' + ') : '全部'}（可選 ${pool.length} 字）`;
+    $('due-info').textContent = `待複習：${due.length} 字`;
+}
+
+// ---- 渲染 ----
+function renderCard() {
+    doneScreen.classList.add('hidden');
+
+    if (!queue.length || qIndex >= queue.length) {
+        showDone();
+        return;
+    }
+
+    const card = queue[qIndex];
+    isFlipped = false;
+    cardFront.classList.remove('hidden');
+    cardBack.classList.add('hidden');
+    hideAllPanels();
+
+    cardCounter.textContent = `${qIndex + 1} / ${queue.length}`;
+    updateTaskUI();
+
+    // 正面
+    frontWord.textContent = card.word;
+    const s = getSrs(card.word);
+    frontTags.innerHTML = '';
+    if (card.star) addTag(`${'★'.repeat(card.star)}`, 'tag-star');
+    if (card.band) addTag(card.band, 'tag-band');
+    addTag(s ? '複習' : '新字', s ? 'tag-due' : 'tag-new');
+
+    // 背面
+    const meta = CATEGORY_META[card.category] || DEFAULT_META;
+    catBar.style.background = meta.bg;
+    cardIcon.className = 'cat-icon ' + meta.icon;
+    cardCatLabel.textContent = card.category || '多益字彙';
+    cardCatMeta.textContent = s ? `已複習 ${s.reps} 次` : '第一次見面';
+
+    /* 【原則1｜建立外語腦】中文遮罩 */
+    const posText = card.pos ? `(${card.pos}) ` : '';
+    backTranslation.innerHTML = '';
+    backTranslation.append(`${card.word} ${posText}`);
+    backTranslation.appendChild(makeZh(card.definition));
+
+    if (card.forms && card.forms.trim()) {
+        backForms.textContent = card.forms;
+        backForms.classList.remove('hidden');
+    } else {
+        backForms.classList.add('hidden');
+    }
+
+    /* 【原則6｜語言組塊】 */
+    if (card.collocation && card.collocation.trim()) {
+        backCollocation.innerHTML = '';
+        card.collocation.split('\n').filter(Boolean).forEach((line, i) => {
+            if (i) backCollocation.appendChild(document.createElement('br'));
+            const m = line.match(/^([^一-龥]+)([一-龥].*)$/);
+            if (m) {
+                backCollocation.append(m[1]);
+                backCollocation.appendChild(makeZh(m[2]));
+            } else {
+                backCollocation.append(line);
+            }
+        });
+        chunkBox.classList.remove('hidden');
+    } else {
+        chunkBox.classList.add('hidden');
+    }
+
+    const ex = splitExample(card.example);
+    if (ex.en || ex.zh) {
+        backExample.innerHTML = '';
+        backExample.append(ex.en);
+        if (ex.zh) {
+            backExample.appendChild(document.createElement('br'));
+            backExample.appendChild(makeZh(ex.zh));
+        }
+        exampleBox.classList.remove('hidden');
+    } else {
+        exampleBox.classList.add('hidden');
+    }
+
+    // 練習區帶回既有筆記
+    const note = store.notes[card.word] || {};
+    inputSentence.value = note.sentence || '';
+    inputImage.value = note.image || '';
+    asrResult.innerHTML = '';
+    aiPrompt.value = buildAiPrompt(card, note);
+
+    // 評分按鈕顯示下次間隔
+    ['again', 'hard', 'good', 'easy'].forEach(r => {
+        $('due-' + r).textContent = humanInterval(previewInterval(card.word, r));
+    });
+}
+
+function addTag(text, cls) {
+    const el = document.createElement('span');
+    el.className = 'tag ' + (cls || '');
+    el.textContent = text;
+    frontTags.appendChild(el);
+}
+
+/* 中文區塊：外語腦模式下先模糊，點擊揭曉 */
+function makeZh(text) {
+    const el = document.createElement('span');
+    el.textContent = text || '';
+    el.className = 'zh-mask' + (store.settings.brain ? '' : ' revealed');
+    el.title = store.settings.brain ? '點擊揭曉中文' : '';
+    el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        el.classList.add('revealed');
+    });
+    return el;
+}
+
+function toggleAllZh() {
+    const masks = document.querySelectorAll('#card-back .zh-mask');
+    const anyHidden = Array.from(masks).some(m => !m.classList.contains('revealed'));
+    masks.forEach(m => m.classList.toggle('revealed', anyHidden));
+}
+
+/* 【原則11｜AI 預編輯學習】產生可貼到 ChatGPT / Claude 的提示詞 */
+function buildAiPrompt(card, note) {
+    const ex = splitExample(card.example);
+    const mySentence = (note && note.sentence) ? note.sentence : '（把你的造句貼在這裡）';
+    return [
+        `你是我的英文寫作與口說教練。我正在背多益單字「${card.word}」（${card.pos}，中文意思：${card.definition}）。`,
+        ``,
+        `1. 我造的句子是：「${mySentence}」`,
+        `   請不要直接照我的中文思維直譯。先幫我「預編輯」：指出我的句子結構哪裡不像母語者，改寫成道地英文，並說明你改了什麼、為什麼。`,
+        `2. 給我 3 組這個字最常用的固定搭配（collocation / chunk），每組附一個商用情境短句。`,
+        `3. 用這個字寫 2 個多益情境例句（辦公、會議、客服等），附中文翻譯。`,
+        `4. 最後用一句話描述這個字的「核心意象」，幫我記住畫面而不是中文字。`,
+        ``,
+        `參考例句：${ex.en || '（無）'}`
+    ].join('\n');
+}
+
+function showDone() {
+    cardFront.classList.add('hidden');
+    cardBack.classList.add('hidden');
+    doneScreen.classList.remove('hidden');
+    const total = sessionStats.again + sessionStats.hard + sessionStats.good + sessionStats.easy;
+    $('done-sub').innerHTML = `本回合完成 <strong>${total}</strong> 張<br>今日累計 <strong>${store.daily.done}</strong> / ${store.settings.goal} 張　連續 <strong>${store.streak.count}</strong> 天<br>` +
+        (store.daily.done >= store.settings.goal ? '今日任務已達標，明天再來保持連續紀錄 🔥' : '再一輪就達標了');
+    cardCounter.textContent = `0 / 0`;
+}
+
+function updateStatsUI() {
+    $('count-again').textContent = sessionStats.again;
+    $('count-hard').textContent = sessionStats.hard;
+    $('count-good').textContent = sessionStats.good;
+    $('count-easy').textContent = sessionStats.easy;
+    $('streak-count').textContent = store.streak.count;
+}
+
+function updateTaskUI() {
+    $('task-done').textContent = store.daily.done;
+    $('task-goal').textContent = store.settings.goal;
+    const pct = Math.min(100, (store.daily.done / store.settings.goal) * 100);
+    progressBar.style.width = pct + '%';
+}
+
+// ---- 互動 ----
+function flipCard() {
+    if (doneScreen.classList.contains('hidden') === false) return;
+    isFlipped = !isFlipped;
+    cardFront.classList.toggle('hidden', isFlipped);
+    cardBack.classList.toggle('hidden', !isFlipped);
+}
+
+function handleRating(type) {
+    if (!queue.length || qIndex >= queue.length) return;
+    const card = queue[qIndex];
+
+    sessionStats[type]++;
+    applyRating(card, type);
+
+    rolloverDaily();
+    store.daily.done++;
+    bumpStreak();
+    saveStore();
+    updateStatsUI();
+
+    /* 【原則7】Again 的字在本回合稍後再出現一次 —— 重複頻率優先 */
+    if (type === 'again') {
+        const insertAt = Math.min(qIndex + 5, queue.length);
+        queue.splice(insertAt, 0, card);
+    }
+
+    qIndex++;
+    stopRecognition();
+    renderCard();
+}
+
+function hideAllPanels() {
+    document.querySelectorAll('.practice-panel').forEach(p => p.classList.add('hidden'));
+    document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+}
+
+/* =========================================================
+   【原則12｜模仿與語音辨識】以機器聽得懂作為發音合格標準
+   使用瀏覽器內建 Web Speech API（Chrome / Edge），不需任何金鑰。
+   ========================================================= */
+function getRecognizer() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return null;
+    if (recognizer) return recognizer;
+    recognizer = new SR();
+    recognizer.lang = 'en-US';
+    recognizer.interimResults = false;
+    recognizer.maxAlternatives = 3;
+    return recognizer;
+}
+
+function stopRecognition() {
+    if (recognizer && recognizing) {
+        try { recognizer.stop(); } catch (e) { /* 忽略重複停止 */ }
+    }
+    recognizing = false;
+}
+
+function normalize(s) {
+    return (s || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function levenshtein(a, b) {
+    const m = a.length, n = b.length;
+    if (!m) return n;
+    if (!n) return m;
+    let prev = Array.from({ length: n + 1 }, (_, i) => i);
+    for (let i = 1; i <= m; i++) {
+        const cur = [i];
+        for (let j = 1; j <= n; j++) {
+            cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+        }
+        prev = cur;
+    }
+    return prev[n];
+}
+
+function wordSimilarity(a, b) {
+    a = normalize(a); b = normalize(b);
+    if (!a || !b) return 0;
+    return 1 - levenshtein(a, b) / Math.max(a.length, b.length);
+}
+
+function sentenceSimilarity(said, target) {
+    const t = normalize(target).split(' ').filter(Boolean);
+    const s = normalize(said).split(' ').filter(Boolean);
+    if (!t.length || !s.length) return 0;
+    const pool = s.slice();
+    let hit = 0;
+    t.forEach(tok => {
+        const i = pool.findIndex(x => x === tok || wordSimilarity(x, tok) > 0.8);
+        if (i >= 0) { hit++; pool.splice(i, 1); }
+    });
+    return hit / t.length;
+}
+
+function startRecognition(mode) {
+    const rec = getRecognizer();
+    if (!rec) {
+        asrResult.innerHTML = '<span class="asr-fail">這個瀏覽器不支援語音辨識。</span><span class="asr-heard"> 請改用 Chrome 或 Edge（需允許麥克風）。</span>';
+        return;
+    }
+    if (recognizing) { stopRecognition(); return; }
+
+    const card = queue[qIndex];
+    if (!card) return;
+    const target = mode === 'word' ? card.word : splitExample(card.example).en;
+    if (!target) { asrResult.innerHTML = '<span class="asr-heard">這張卡沒有例句可以跟讀。</span>'; return; }
+
+    asrResult.innerHTML = '<span class="rec-dot"></span><span class="asr-heard">請開始念…（再按一次可停止）</span>';
+    recognizing = true;
+
+    rec.onresult = (event) => {
+        const alts = Array.from(event.results[0]).map(r => r.transcript);
+        let best = alts[0], score = 0;
+        alts.forEach(a => {
+            const sc = mode === 'word' ? wordSimilarity(a, target) : sentenceSimilarity(a, target);
+            if (sc > score) { score = sc; best = a; }
+        });
+        const pct = Math.round(score * 100);
+        // 單字必須被完整聽對才算合格（相似度高但聽成別的字不算，例如 agility ≠ ability）
+        const pass = mode === 'word'
+            ? alts.some(a => normalize(a) === normalize(target))
+            : score >= 0.7;
+        const nearMiss = !pass && mode === 'word' && score >= 0.7;
+        asrResult.innerHTML =
+            `<div class="${pass ? 'asr-pass' : 'asr-fail'}">${pass ? '✅ 機器聽懂了：合格' : (nearMiss ? '❌ 差一點，機器聽成別的字了' : '❌ 機器沒聽懂：再試一次')}${mode === 'word' ? '' : `（相似度 ${pct}%）`}</div>` +
+            `<div class="asr-heard">機器聽到：「${best}」<br>目標：「${target}」</div>`;
+    };
+    rec.onerror = (e) => {
+        const msg = e.error === 'not-allowed' ? '麥克風權限被拒絕，請在網址列允許麥克風。'
+            : e.error === 'no-speech' ? '沒有聽到聲音，請再試一次。'
+            : `語音辨識發生錯誤：${e.error}`;
+        asrResult.innerHTML = `<span class="asr-fail">${msg}</span>`;
+        recognizing = false;
+    };
+    rec.onend = () => { recognizing = false; };
+
+    try { rec.start(); }
+    catch (e) { recognizing = false; asrResult.innerHTML = '<span class="asr-fail">無法啟動麥克風，請重新整理後再試。</span>'; }
+}
+
+// ---- 事件綁定 ----
+cardFront.addEventListener('click', (e) => {
+    if (e.target.closest('#btn-speak-word')) return;
+    flipCard();
+});
+
+$('btn-speak-word').addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (queue[qIndex]) speak(queue[qIndex].word);
+});
+
+$('btn-speak-example').addEventListener('click', () => {
+    if (queue[qIndex]) speak(splitExample(queue[qIndex].example).en);
+});
+
+$('btn-speak-chunk').addEventListener('click', () => {
+    if (queue[qIndex]) speak(englishOnly(queue[qIndex].collocation));
+});
+
+/* 【原則10｜區塊建築原則】直接把母語者的積木搬走 */
+$('btn-copy-chunk').addEventListener('click', () => {
+    if (queue[qIndex]) copyText(queue[qIndex].collocation, '已複製語言積木');
+});
+$('btn-copy-example').addEventListener('click', () => {
+    if (queue[qIndex]) copyText(queue[qIndex].example, '已複製例句');
+});
+$('btn-copy-ai').addEventListener('click', () => copyText(aiPrompt.value, '已複製 AI 提示詞'));
+
+// 練習分頁
+document.querySelectorAll('.ptab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        const key = tab.dataset.panel;
+        const panel = $('panel-' + key);
+        const wasOpen = !panel.classList.contains('hidden');
+        hideAllPanels();
+        if (!wasOpen) {
+            panel.classList.remove('hidden');
+            tab.classList.add('active');
+            if (key === 'ai' && queue[qIndex]) {
+                aiPrompt.value = buildAiPrompt(queue[qIndex], store.notes[queue[qIndex].word] || {});
+            }
+        }
+    });
+});
+
+/* 【原則9｜寫作即高速口說】＋【原則5｜核心意象】筆記存本機 */
+function saveNote(field, value) {
+    const card = queue[qIndex];
+    if (!card) return;
+    const note = store.notes[card.word] || {};
+    note[field] = value;
+    store.notes[card.word] = note;
+    saveStore();
+}
+
+$('btn-save-sentence').addEventListener('click', () => {
+    saveNote('sentence', inputSentence.value.trim());
+    if (queue[qIndex]) aiPrompt.value = buildAiPrompt(queue[qIndex], store.notes[queue[qIndex].word]);
+    toast('已儲存造句');
+});
+$('btn-speak-sentence').addEventListener('click', () => speak(inputSentence.value));
+$('btn-save-image').addEventListener('click', () => {
+    saveNote('image', inputImage.value.trim());
+    toast('已儲存意象筆記');
+});
+
+$('btn-rec-word').addEventListener('click', () => startRecognition('word'));
+$('btn-rec-example').addEventListener('click', () => startRecognition('example'));
+
+$('btn-again').addEventListener('click', () => handleRating('again'));
+$('btn-hard').addEventListener('click', () => handleRating('hard'));
+$('btn-good').addEventListener('click', () => handleRating('good'));
+$('btn-easy').addEventListener('click', () => handleRating('easy'));
+
+$('btn-next-round').addEventListener('click', () => {
+    buildQueue();
+    renderCard();
+});
+
+// CSV 上傳
+$('csv-file-input').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => parseCSV(ev.target.result);
+    reader.readAsText(file, 'utf-8');
+});
+
+// Modal 開關
+function openModal(id) { $(id).classList.remove('hidden'); }
+function closeModal(id) { $(id).classList.add('hidden'); }
+$('btn-info').addEventListener('click', () => openModal('info-modal'));
+$('btn-mindmap').addEventListener('click', () => openModal('mindmap-modal'));
+$('btn-settings').addEventListener('click', () => { syncSettingsUI(); openModal('settings-modal'); });
+document.querySelectorAll('[data-close]').forEach(btn => {
+    btn.addEventListener('click', () => closeModal(btn.dataset.close));
+});
+document.querySelectorAll('.modal-overlay').forEach(ov => {
+    ov.addEventListener('click', (e) => { if (e.target === ov) ov.classList.add('hidden'); });
+});
+
+// 外語腦模式快捷鈕
+$('btn-brain').addEventListener('click', () => {
+    store.settings.brain = !store.settings.brain;
+    saveStore();
+    syncBrainBtn();
+    renderCard();
+    toast(store.settings.brain ? '外語腦模式：中文已遮住' : '外語腦模式：已關閉');
+});
+
+function syncBrainBtn() {
+    $('btn-brain').classList.toggle('on', store.settings.brain);
+    $('chk-brain').checked = store.settings.brain;
+}
+
+// 設定
+function syncSettingsUI() {
+    $('sel-level').value = store.settings.level;
+    $('chk-iplus').checked = store.settings.iplus;
+    $('input-goal').value = store.settings.goal;
+    $('chk-brain').checked = store.settings.brain;
+    const learned = Object.keys(store.srs).length;
+    const noted = Object.keys(store.notes).length;
+    $('record-desc').textContent = `已學習 ${learned} 字、${noted} 則筆記，資料只存在這台電腦的瀏覽器。`;
+}
+
+$('sel-level').addEventListener('change', (e) => {
+    store.settings.level = e.target.value;
+    saveStore(); buildQueue(); renderCard(); syncSettingsUI();
+});
+$('chk-iplus').addEventListener('change', (e) => {
+    store.settings.iplus = e.target.checked;
+    saveStore(); buildQueue(); renderCard();
+});
+$('input-goal').addEventListener('change', (e) => {
+    const v = Math.max(5, Math.min(300, parseInt(e.target.value, 10) || 20));
+    store.settings.goal = v;
+    e.target.value = v;
+    saveStore(); updateTaskUI(); buildQueue();
+});
+$('chk-brain').addEventListener('change', (e) => {
+    store.settings.brain = e.target.checked;
+    saveStore(); syncBrainBtn(); renderCard();
+});
+$('btn-reset').addEventListener('click', () => {
+    if (!confirm('確定要清除所有學習紀錄嗎？（間隔重複進度、造句、意象筆記、連續天數都會消失，且無法復原）')) return;
+    localStorage.removeItem(STORE_KEY);
+    store = {
+        srs: {}, notes: {},
+        daily: { date: todayStr(), done: 0 },
+        streak: { count: 0, lastDate: '' },
+        settings: { level: '400-600', iplus: true, goal: 20, brain: false }
+    };
+    sessionStats = { again: 0, hard: 0, good: 0, easy: 0 };
+    saveStore(); syncSettingsUI(); syncBrainBtn(); updateStatsUI();
+    buildQueue(); renderCard();
+    toast('已清除全部學習紀錄');
+});
+
+// 鍵盤
+document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.code === 'Space' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
+    else if (e.key === '1') { if (isFlipped) handleRating('again'); }
+    else if (e.key === '2') { if (isFlipped) handleRating('hard'); }
+    else if (e.key === '3') { if (isFlipped) handleRating('good'); }
+    else if (e.key === '4') { if (isFlipped) handleRating('easy'); }
+    else if (e.key === 'r' || e.key === 'R') { if (queue[qIndex]) speak(queue[qIndex].word); }
+    else if (e.key === 'z' || e.key === 'Z') { if (isFlipped) toggleAllZh(); }
+    else if (e.key === 'Escape') { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.add('hidden')); }
+});
+
+// 啟動
+loadStore();
+syncBrainBtn();
+updateStatsUI();
+updateTaskUI();
+loadDefaultCSV();
+</script>
+</body>
+</html>

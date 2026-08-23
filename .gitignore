@@ -1,0 +1,19 @@
+# 編輯器與工具設定
+.claude/
+.vscode/
+.idea/
+
+# 作業系統
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python（資料轉換腳本用）
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# 暫存
+*.log
+*.tmp
