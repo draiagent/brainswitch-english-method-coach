@@ -7,6 +7,12 @@
 間隔重複排程 ｜ 中文遮罩訓練外語腦 ｜ 語言積木 ｜ 語音辨識跟讀 ｜ AI 提示詞外顯
 **打開網址就能用**——免安裝、免註冊、免 API 金鑰、不蒐集任何資料。
 
+## ▶️ 立即開始使用
+
+### **https://draiagent.github.io/brainswitch-english-method-coach/**
+
+建議使用 Chrome 或 Edge（跟讀評分功能需要語音辨識支援）。
+
 > 🤖 這個專案本身也是一份**生成式 AI 協作開發的公開教材**——從一張心智圖截圖到上線，全程人與 AI 對話完成，過程完整記錄在 [本專案如何用 AI 生成](#本專案如何用-ai-生成)。
 
 ---
@@ -69,7 +75,7 @@
 ## 快速開始
 
 ### 線上使用
-直接開啟 GitHub Pages 網址即可，不需安裝任何東西。
+直接開啟 **<https://draiagent.github.io/brainswitch-english-method-coach/>**，不需安裝任何東西，開啟即可使用。
 
 ### 本機使用
 因為要讀取 CSV 資料檔，**不能直接用檔案總管雙擊開啟**（瀏覽器的 CORS 限制會擋住讀取）。請起一個本機伺服器：
@@ -173,8 +179,17 @@ python -m http.server 8000
 
 單一 HTML 檔案，內嵌 CSS 與 JavaScript，無建置流程、無框架。外部依賴僅兩個 CDN：
 
-- [PapaParse](https://www.papaparse.com/) — CSV 解析
-- [Font Awesome](https://fontawesome.com/) — 圖示
+| 資源 | 用途 | 授權 |
+|---|---|---|
+| [PapaParse 5.4.1](https://www.papaparse.com/) | CSV 解析 | MIT |
+| [Font Awesome Free 6.4.0](https://fontawesome.com/) | 介面圖示 | 圖示 CC BY 4.0、字型 SIL OFL 1.1、程式碼 MIT |
+
+兩者皆以 CDN 載入官方未修改版本，授權聲明保留在原檔內。
+
+### 方法論來源
+本工具的功能設計依據一份「多語學習三大核心策略」心智圖（三大策略、12 條原則）。**該學習方法架構非本專案原創**，本專案的貢獻在於把這些原則實作成可操作的介面功能，以及所有程式碼與文件。
+
+心智圖中的原則名稱為便於對照而沿用原始措辭；使用本專案進行公開教學時，建議一併說明方法論並非本工具發明。
 
 ---
 
