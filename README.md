@@ -1,4 +1,4 @@
-# 外語腦英語方法教練 BrainSwitch
+# AI 外語腦英語學習方法教練 BrainSwitch-english-method-coach
 
 > **把一套完整的語言學習方法，做成學生可以按、老師可以教的工具。**
 
